@@ -23,11 +23,21 @@ namespace YgoFm.App;
 /// </summary>
 public partial class MainWindow : Window
 {
-    // A tick that finds nothing to do is cheap; the _busy guard means an overrun just delays
-    // the next one rather than overlapping, so this is a target cadence, not a hard budget. It
-    // was 700ms until the recognizer grew a multi-scale search (see CardArtLibrary.Match) that
-    // measured at 1.4-1.8s for 5 slots — set well above that so most ticks land on schedule.
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(2000);
+    // A target cadence, not a hard budget: the _busy guard (see Timer_Tick) means a tick that
+    // is still running when this interval elapses again just gets skipped, never overlapped, so
+    // setting this low never causes concurrent capture/recognition — it only controls how long
+    // the app waits after a FAST tick before starting the next one.
+    //
+    // That distinction is the whole reason this is 300ms and not something closer to the
+    // recognizer's own cost. Official-art matching (CardArtLibrary.Match's multi-scale search)
+    // still measures 1.4-1.8s for 5 slots regardless of this value — _busy is what actually
+    // paces that case, not PollInterval. But once a card is taught (HandReader.ReadSlot's
+    // taught-library check, which skips OCR and the slow search entirely for a confident
+    // match), a tick can finish in a small fraction of that. The old 2000ms made every one of
+    // those fast ticks wait out a fixed 2-second gap regardless — pure idle time once the
+    // library already knows the hand. 300ms keeps a slow tick exactly as slow as its own work
+    // makes it, while letting a fast one repeat close to back-to-back.
+    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(1000);
 
     private readonly ObservableCollection<SlotReadingView> _rows = [];
 
