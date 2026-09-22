@@ -14,9 +14,19 @@ sem ler a memória do emulador, só a tela, então funciona com qualquer emulado
 
 Pronto :D !!!
 
-> breve subo um executável
-
 <img width="800" height="400" alt="UIrecordyugi-oh-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/b2602a10-f643-4085-8e0c-de9aaeaab191" />
+
+## Baixando o executável pronto
+
+Não precisa instalar nada além do Windows — o executável já vem com tudo que precisa embutido:
+
+1. Baixe a versão mais recente em **[Releases](https://github.com/summersongoncalves/yugi-oh-fusion-assistant/releases/latest)**
+   (arquivo `YgoFm-*-win-x64.zip`).
+2. Extraia o `.zip` numa pasta qualquer.
+3. Rode `YgoFm.App.exe`.
+
+> O arquivo é grande (~130 MB) porque é *self-contained*: embute o runtime do .NET inteiro, então
+> ninguém precisa instalar o .NET separadamente só para rodar o app.
 
 ## Como funciona (visão geral)
 
@@ -49,7 +59,10 @@ como o reconhecimento é calibrado), veja [CLAUDE.md](CLAUDE.md).
 - [.NET 10 SDK](https://dotnet.microsoft.com/download).
 - Um emulador de PlayStation 1 rodando o jogo (qualquer um: DuckStation, ePSXe, RetroArch, etc.).
 
-## Baixando e rodando o projeto
+## Rodando a partir do código-fonte
+
+Só necessário se for mexer no código — para apenas usar o app, veja
+[Baixando o executável pronto](#baixando-o-executável-pronto) acima.
 
 ```powershell
 git clone https://github.com/summersongoncalves/yugi-oh-fusion-assistant.git
