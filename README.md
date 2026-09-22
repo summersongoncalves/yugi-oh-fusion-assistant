@@ -52,8 +52,8 @@ como o reconhecimento é calibrado), veja [CLAUDE.md](CLAUDE.md).
 ## Baixando e rodando o projeto
 
 ```powershell
-git clone https://github.com/summersongoncalves/yugi-oh-fm-savior.git
-cd yugi-oh-fm-savior
+git clone https://github.com/summersongoncalves/yugi-oh-fusion-assistant.git
+cd yugi-oh-fusion-assistant
 dotnet build YgoFm.slnx
 dotnet run --project src\YgoFm.App
 ```
@@ -105,4 +105,9 @@ Tipos usados: `feat` (funcionalidade nova), `fix` (correção), `chore` (manuten
 
 ## Licença
 
-Não defini isso ainda.
+Este projeto é distribuído sob a licença **MIT** — veja [LICENSE.md](LICENSE.md) para o texto
+completo.
+
+Isso cobre apenas o código-fonte escrito para este projeto. Os dados das cartas
+(`data/cards.json`) e a arte oficial (`data/card-art.png`) continuam sendo propriedade da Konami —
+não são cobertos por esta licença, e estão incluídos aqui apenas para o reconhecimento funcionar.
