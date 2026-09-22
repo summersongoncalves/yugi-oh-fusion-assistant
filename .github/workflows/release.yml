@@ -1,0 +1,65 @@
+# Builds a self-contained Windows executable and attaches it to a GitHub Release.
+#
+# Deliberately much simpler than the "generic .NET Desktop" workflow GitHub suggests for WPF
+# repos: that template targets a Windows Application Packaging (.wapproj) project producing a
+# signed MSIX, which this repo has none of (no packaging project, no signing certificate, no
+# test project — see CLAUDE.md). This workflow instead does the one thing the project actually
+# needs: a portable .exe someone can download and run without installing the .NET SDK.
+#
+# Triggered by pushing a version tag (e.g. "v1.0.0"). The intended flow is to create the Release
+# by hand on GitHub (Releases → "Draft a new release" → type a new tag like v1.0.0 → Publish) so
+# the release notes stay human-written; publishing that way still pushes the tag underneath,
+# which is what fires this workflow. softprops/action-gh-release (last step) then finds that
+# same tag's release and attaches the zip to it — it does not need to have created the release
+# itself. workflow_dispatch is included too, so a manual re-run is possible without re-tagging
+# (e.g. to retry a failed build against an existing tag).
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to upload files to a Release
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # --self-contained bundles the .NET runtime itself into the output, so whoever downloads
+      # this never needs to install anything first. Deliberately NOT using PublishSingleFile:
+      # OpenCvSharp4.runtime.win ships a native OpenCvSharpExtern.dll, and single-file bundling
+      # of native (non-managed) dependencies needs extra flags and is easy to get subtly wrong
+      # in ways that only show up at runtime on a machine other than the one that built it. A
+      # plain folder of files is more files to zip, but there is nothing surprising about it.
+      - name: Publish self-contained build
+        run: dotnet publish src/YgoFm.App/YgoFm.App.csproj -c Release -r win-x64 --self-contained true -o publish
+
+      # ProjectPaths.FindRoot() (src/YgoFm.Vision/ProjectPaths.cs) walks upward looking for a
+      # .sln/.slnx file to find the repo root; a standalone published build has neither, so it
+      # falls back to the executable's own folder. That fallback is what makes "just drop a
+      # data folder next to the .exe" work here without any code changes for this workflow.
+      - name: Copy card data alongside the executable
+        run: |
+          New-Item -ItemType Directory -Force -Path publish\data
+          Copy-Item data\cards.json publish\data\
+          Copy-Item data\card-art.png publish\data\
+
+      - name: Zip the published output
+        run: Compress-Archive -Path publish\* -DestinationPath YgoFm-${{ github.ref_name }}-win-x64.zip
+
+      - name: Attach the build to the Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: YgoFm-${{ github.ref_name }}-win-x64.zip
